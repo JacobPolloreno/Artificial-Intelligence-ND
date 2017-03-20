@@ -51,6 +51,76 @@ def custom_score(game, player):
     return float(own_moves - pursuit_amplifier * opponents_moves)
 
 
+def custom_score2(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opponents_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    random_pursuit_amplifier = 1.0 + 2.0 * random.random()
+    return float(own_moves - random_pursuit_amplifier * opponents_moves)
+
+
+def custom_score3(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    blank_spaces = len(game.get_blank_spaces())
+    own_moves = len(game.get_legal_moves(player))
+    opponents_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    return float(blank_spaces + own_moves - opponents_moves)
+
+
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
     and a depth-limited minimax algorithm with alpha-beta pruning. You must
