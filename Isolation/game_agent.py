@@ -43,15 +43,16 @@ def custom_score(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    blank_spaces = len(game.get_blank_spaces())
     own_moves = len(game.get_legal_moves(player))
     opponents_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    blank_spaces = len(game.get_blank_spaces())
 
     pursuit_amplifier = 1.0 + 2.0 / blank_spaces
     return float(own_moves - pursuit_amplifier * opponents_moves)
 
 
-def custom_score2(game, player):
+def custom_score_division(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
@@ -82,11 +83,19 @@ def custom_score2(game, player):
     own_moves = len(game.get_legal_moves(player))
     opponents_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
-    random_pursuit_amplifier = 1.0 + 2.0 * random.random()
-    return float(own_moves - random_pursuit_amplifier * opponents_moves)
+    if own_moves == 0 and opponents_moves != 0:
+        return float('-inf')
+    elif own_moves != 0 and opponents_moves == 0:
+        return float('inf')
+    elif own_moves == 0 and opponents_moves == 0:
+        return -10
+    elif own_moves >= opponents_moves:
+        return float((own_moves / opponents_moves)**2)
+    elif own_moves < opponents_moves:
+        return -float((opponents_moves / own_moves)**2)
 
 
-def custom_score3(game, player):
+def custom_score_surrounding(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
@@ -114,11 +123,28 @@ def custom_score3(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    blank_spaces = len(game.get_blank_spaces())
-    own_moves = len(game.get_legal_moves(player))
-    opponents_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    def surrounding_spaces(game, player):
+        free_spaces = 0.
+        # Generate a 5x5 boundary box around player location
+        center = game.get_player_location(player)
+        for row in range(center[0] - 2, center[1] + 2):
+            for col in range(center[1] - 2, center[1] + 2):
+                move = (row, col)
+                # Check to see if the move is legal & free
+                # if so add to surrounding free spaces counter
+                if game.move_is_legal(move):
+                    free_spaces += 1.
 
-    return float(blank_spaces + own_moves - opponents_moves)
+        return free_spaces
+
+    opponent = game.get_opponent(player)
+    own_moves = len(game.get_legal_moves(player))
+    opponents_moves = len(game.get_legal_moves(opponent))
+
+    own_free_area = surrounding_spaces(game, player) - own_moves
+    opponents_free_area = surrounding_spaces(game, opponent) - opponents_moves
+
+    return float(own_free_area - 2 * opponents_free_area)
 
 
 class CustomPlayer:
