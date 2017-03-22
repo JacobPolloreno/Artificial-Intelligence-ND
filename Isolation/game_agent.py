@@ -46,9 +46,11 @@ def custom_score(game, player):
     own_moves = len(game.get_legal_moves(player))
     opponents_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
-    blank_spaces = len(game.get_blank_spaces())
+    pursuit_amplifier = 3.0 - 1.0 / game.move_count
 
-    pursuit_amplifier = 1.0 + 2.0 / blank_spaces
+    if game.move_count == 0:
+        pursuit_amplifier = 4.0
+
     return float(own_moves - pursuit_amplifier * opponents_moves)
 
 
@@ -95,7 +97,7 @@ def custom_score_division(game, player):
         return -float((opponents_moves / own_moves)**2)
 
 
-def custom_score_surrounding(game, player):
+def surrounding_area(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
@@ -126,9 +128,10 @@ def custom_score_surrounding(game, player):
     def surrounding_spaces(game, player):
         free_spaces = 0.
         # Generate a 5x5 boundary box around player location
+        radius = int(game.width / 2)
         center = game.get_player_location(player)
-        for row in range(center[0] - 2, center[1] + 2):
-            for col in range(center[1] - 2, center[1] + 2):
+        for row in range(center[0] - radius, center[1] + radius):
+            for col in range(center[1] - radius, center[1] + radius):
                 move = (row, col)
                 # Check to see if the move is legal & free
                 # if so add to surrounding free spaces counter
@@ -138,13 +141,62 @@ def custom_score_surrounding(game, player):
         return free_spaces
 
     opponent = game.get_opponent(player)
+
+    own_free_area = surrounding_spaces(game, player)
+    opponents_free_area = surrounding_spaces(game, opponent)
+
+    return float(own_free_area - opponents_free_area)
+
+
+def custom_score_test(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    opponent = game.get_opponent(player)
     own_moves = len(game.get_legal_moves(player))
     opponents_moves = len(game.get_legal_moves(opponent))
 
-    own_free_area = surrounding_spaces(game, player) - own_moves
-    opponents_free_area = surrounding_spaces(game, opponent) - opponents_moves
+    def surrounding_spaces(game, player):
+        free_spaces = 0.
+        # Generate a 5x5 boundary box around player location
+        radius = int(game.width / 2)
+        center = game.get_player_location(player)
+        for row in range(center[0] - radius, center[1] + radius):
+            for col in range(center[1] - radius, center[1] + radius):
+                move = (row, col)
+                # Check to see if the move is legal & free
+                # if so add to surrounding free spaces counter
+                if game.move_is_legal(move):
+                    free_spaces += 1.
 
-    return float(own_free_area - 2 * opponents_free_area)
+        return free_spaces
+
+    return float(surrounding_spaces(game, player) + own_moves -
+                 2 * opponents_moves - surrounding_spaces(game, opponent))
 
 
 class CustomPlayer:
@@ -229,6 +281,12 @@ class CustomPlayer:
         # immediately if there are no legal moves
         if not legal_moves:
             return (-1, -1)
+
+        # Opening - take center if available
+        if game.move_count <= -1:
+            center = (int(game.width / 2), int(game.height / 2))
+            if game.move_is_legal(center) and center in legal_moves:
+                return center
 
         # Load a random move as a default
         move = legal_moves[random.randint(0, len(legal_moves) - 1)]
