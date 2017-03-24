@@ -7,7 +7,6 @@ interface, but cannot be automatically assessed for correctness.
 STUDENTS SHOULD NOT NEED TO MODIFY THIS CODE.  IT WOULD BE BEST TO TREAT THIS
 FILE AS A BLACK BOX FOR TESTING.
 """
-import random
 import unittest
 import timeit
 import sys
@@ -16,7 +15,6 @@ import isolation
 import game_agent
 
 from collections import Counter
-from copy import deepcopy
 from copy import copy
 from functools import wraps
 from queue import Queue
@@ -25,8 +23,11 @@ from multiprocessing import TimeoutError
 from queue import Empty as QueueEmptyError
 from importlib import reload
 
+TIMEOUT = 60
+
 WRONG_MOVE = """
-The {} function failed because it returned a non-optimal move at search depth {}.
+The {} function failed because it returned a non-optimal move at search
+depth {}.
 Valid choices: {}
 Your selection: {}
 """
@@ -57,6 +58,12 @@ Your agent returned an invalid move. Make sure that your function returns
 a selection when the search times out during iterative deepening.
 Valid choices: {!s}
 Your choice: {}
+"""
+
+WRONG_HEURISTIC = """
+Your agent did not use the heuristic provided to the agent constructor
+(accessed with self.score()).  Make sure that you're not directly calling
+your custom_score() heuristic function in alpha-beta or minimax search.
 """
 
 TIMER_MARGIN = 15  # time (in ms) to leave on the timer to avoid timeout
@@ -105,8 +112,10 @@ def timeout(time_limit):
                     raise err[0](err[1]).with_traceback(err[2])
                 return res
             except QueueEmptyError:
-                raise TimeoutError("Test aborted due to timeout. Test was " +
-                                   "expected to finish in less than {} second(s).".format(time_limit))
+                raise TimeoutError(
+                    ("Test aborted due to timeout. Test was " +
+                     "expected to finish in less than {} second(s).").format(
+                        time_limit))
 
         return testWrapper
 
@@ -129,7 +138,7 @@ def makeEvalTable(table):
     return score
 
 
-def makeEvalStop(limit, timer, value=None):
+def makeEvalStop(limit, timer):
     """Use a closure to create a heuristic function that forces the search
     timer to expire when a fixed number of node expansions have been perfomred
     during the search. This ensures that the search algorithm should always be
@@ -140,6 +149,7 @@ def makeEvalStop(limit, timer, value=None):
     """
 
     def score(game, player):
+        timer.invoked = True
         if timer.time_left() < 0:
             raise TimeoutError("Timer expired during search. You must " +
                                "return an answer before the timer reaches 0.")
@@ -185,14 +195,12 @@ class CounterBoard(isolation.Board):
         self.root = None
 
     def copy(self):
-        new_board = CounterBoard(self.__player_1__, self.__player_2__,
+        new_board = CounterBoard(self._player_1, self._player_2,
                                  width=self.width, height=self.height)
         new_board.move_count = self.move_count
-        new_board.__active_player__ = self.__active_player__
-        new_board.__inactive_player__ = self.__inactive_player__
-        new_board.__last_player_move__ = copy(self.__last_player_move__)
-        new_board.__player_symbols__ = copy(self.__player_symbols__)
-        new_board.__board_state__ = deepcopy(self.__board_state__)
+        new_board._active_player = self._active_player
+        new_board._inactive_player = self._inactive_player
+        new_board._board_state = copy(self._board_state)
         new_board.counter = self.counter
         new_board.visited = self.visited
         new_board.root = self.root
@@ -227,11 +235,10 @@ class Project1Test(unittest.TestCase):
         board.apply_move(loc2)
         return agentUT, board
 
-    @timeout(5)
+    @timeout(TIMEOUT)
     # @unittest.skip("Skip eval function test.")  # Uncomment this line to skip test
     def test_heuristic(self):
-        """ Test output interface of heuristic score function interface."""
-
+        """Test output interface of heuristic score function interface."""
         player1 = "Player1"
         player2 = "Player2"
         p1_location = (0, 0)
@@ -243,10 +250,10 @@ class Project1Test(unittest.TestCase):
         self.assertIsInstance(game_agent.custom_score(game, player1), float,
             "The heuristic function should return a floating point")
 
-    timeout(5)
+    @timeout(TIMEOUT)
     # @unittest.skip("Skip simple minimax test.")  # Uncomment this line to skip test
     def test_minimax_interface(self):
-        """ Test CustomPlayer.minimax interface with simple input """
+        """Test CustomPlayer.minimax interface with simple input """
         h, w = 7, 7  # board size
         test_depth = 1
         starting_location = (5, 3)
@@ -274,10 +281,10 @@ class Project1Test(unittest.TestCase):
                              "point value approximating the score for the " +
                              "branch being searched."))
 
-    timeout(5)
+    @timeout(TIMEOUT)
     # @unittest.skip("Skip alphabeta test.")  # Uncomment this line to skip test
     def test_alphabeta_interface(self):
-        """ Test CustomPlayer.alphabeta interface with simple input """
+        """Test CustomPlayer.alphabeta interface with simple input """
         h, w = 9, 9  # board size
         test_depth = 1
         starting_location = (2, 7)
@@ -305,10 +312,10 @@ class Project1Test(unittest.TestCase):
                              "point value approximating the score for the " +
                              "branch being searched."))
 
-    @timeout(5)
+    @timeout(TIMEOUT)
     # @unittest.skip("Skip get_move test.")  # Uncomment this line to skip test
     def test_get_move_interface(self):
-        """ Test CustomPlayer.get_move interface with simple input """
+        """Test CustomPlayer.get_move interface with simple input """
         h, w = 9, 9  # board size
         test_depth = 1
         starting_location = (2, 7)
@@ -357,10 +364,10 @@ class Project1Test(unittest.TestCase):
                        "next move. The move must be one of the legal moves " +
                        "on the current game board."))
 
-    @timeout(5)
+    @timeout(TIMEOUT)
     # @unittest.skip("Skip minimax test.")  # Uncomment this line to skip test
     def test_minimax(self):
-        """ Test CustomPlayer.minimax
+        """Test CustomPlayer.minimax
 
         This test uses a scoring function that returns a constant value based
         on the location of the search agent on the board to force minimax to
@@ -422,10 +429,10 @@ class Project1Test(unittest.TestCase):
             self.assertIn(move, expected_moves[idx // 2], WRONG_MOVE.format(
                 method, test_depth, expected_moves[idx // 2], move))
 
-    @timeout(20)
+    @timeout(TIMEOUT)
     # @unittest.skip("Skip alpha-beta test.")  # Uncomment this line to skip test
     def test_alphabeta(self):
-        """ Test CustomPlayer.alphabeta
+        """Test CustomPlayer.alphabeta
 
         This test uses a scoring function that returns a constant value based
         on the branch being searched by alphabeta in the user agent, and forces
@@ -476,14 +483,14 @@ class Project1Test(unittest.TestCase):
             self.assertIn(move, first_branch, WRONG_MOVE.format(
                 method, test_depth, first_branch, move))
 
-
-    @timeout(20)
+    @timeout(TIMEOUT)
     # @unittest.skip("Skip iterative deepening test.")  # Uncomment this line to skip test
     def test_get_move(self):
-        """ Test iterative deepening in CustomPlayer.get_move by placing an
-        agent on the game board and performing ID minimax search, which
-        should visit a specific number of unique nodes while expanding. By
-        forcing the search to timeout when a predetermined number of nodes
+        """Test iterative deepening in CustomPlayer.get_move
+
+        Placing an agent on the game board and performing ID minimax search,
+        which should visit a specific number of unique nodes while expanding.
+        By forcing the search to timeout when a predetermined number of nodes
         have been expanded, we can then verify that the expected number of
         unique nodes have been visited.
         """
@@ -497,6 +504,7 @@ class Project1Test(unittest.TestCase):
             """
             def __init__(self, time_limit):
                 self.time_limit = time_limit
+                self.invoked = False
                 self.start_time = curr_time_millis()
 
             def time_left(self):
@@ -520,7 +528,7 @@ class Project1Test(unittest.TestCase):
             # the expected number of nodes
             time_limit = 1e4
             timer = DynamicTimer(time_limit)
-            eval_fn = makeEvalStop(exact_counts[idx][0], timer, time_limit)
+            eval_fn = makeEvalStop(exact_counts[idx][0], timer)
             agentUT, board = self.initAUT(-1, eval_fn, True, method,
                                           origins[idx], adversary_location,
                                           w, h)
@@ -530,6 +538,7 @@ class Project1Test(unittest.TestCase):
             diff_total = abs(board.counts[0] - exact_counts[idx][0])
             diff_unique = abs(board.counts[1] - exact_counts[idx][1])
 
+            self.assertTrue(timer.invoked, WRONG_HEURISTIC)
             self.assertTrue(diff_total <= 1 and diff_unique == 0, ID_FAIL)
 
             self.assertTrue(chosen_move in legal_moves, INVALID_MOVE.format(
