@@ -7,7 +7,6 @@ You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
 import random
-import sys
 
 
 class Timeout(Exception):
@@ -16,6 +15,19 @@ class Timeout(Exception):
 
 
 def custom_score(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    if game.move_count / len(game.get_blank_spaces()) < 1:
+        return pursuitAmplifierHeuristic(game, player)
+    else:
+        return surroundingAreaHueristic(game, player)
+
+
+def pursuitAmplifierHeuristic(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
@@ -37,12 +49,6 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    if game.is_loser(player):
-        return float("-inf")
-
-    if game.is_winner(player):
-        return float("inf")
-
     own_moves = len(game.get_legal_moves(player))
     opponents_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
@@ -97,7 +103,7 @@ def custom_score_division(game, player):
         return -float((opponents_moves / own_moves)**2)
 
 
-def surrounding_area(game, player):
+def surroundingAreaHueristic(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
@@ -119,14 +125,11 @@ def surrounding_area(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    if game.is_loser(player):
-        return float("-inf")
-
-    if game.is_winner(player):
-        return float("inf")
 
     def surrounding_spaces(game, player):
         free_spaces = 0.
+        blank_spaces = game.get_blank_spaces()
+
         # Generate a 5x5 boundary box around player location
         radius = int(game.width / 2)
         center = game.get_player_location(player)
@@ -135,7 +138,7 @@ def surrounding_area(game, player):
                 move = (row, col)
                 # Check to see if the move is legal & free
                 # if so add to surrounding free spaces counter
-                if game.move_is_legal(move):
+                if move in blank_spaces:
                     free_spaces += 1.
 
         return free_spaces
@@ -143,60 +146,17 @@ def surrounding_area(game, player):
     opponent = game.get_opponent(player)
 
     own_free_area = surrounding_spaces(game, player)
-    opponents_free_area = surrounding_spaces(game, opponent)
+    #opponents_free_area = surrounding_spaces(game, opponent)
 
-    return float(own_free_area - opponents_free_area)
+    #return float(own_free_area - opponents_free_area)
+    return own_free_area
 
 
-def custom_score_test(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
-
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    player : object
-        A player instance in the current game (i.e., an object corresponding to
-        one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-    Returns
-    -------
-    float
-        The heuristic value of the current game state to the specified player.
+def manhattanHeuristic(game, player):
     """
-    if game.is_loser(player):
-        return float("-inf")
-
-    if game.is_winner(player):
-        return float("inf")
-
-    opponent = game.get_opponent(player)
-    own_moves = len(game.get_legal_moves(player))
-    opponents_moves = len(game.get_legal_moves(opponent))
-
-    def surrounding_spaces(game, player):
-        free_spaces = 0.
-        # Generate a 5x5 boundary box around player location
-        radius = int(game.width / 2)
-        center = game.get_player_location(player)
-        for row in range(center[0] - radius, center[1] + radius):
-            for col in range(center[1] - radius, center[1] + radius):
-                move = (row, col)
-                # Check to see if the move is legal & free
-                # if so add to surrounding free spaces counter
-                if game.move_is_legal(move):
-                    free_spaces += 1.
-
-        return free_spaces
-
-    return float(surrounding_spaces(game, player) + own_moves -
-                 2 * opponents_moves - surrounding_spaces(game, opponent))
+    Calculate the heurisitc value of a game state from the point of view
+    """
+    pass
 
 
 class CustomPlayer:
@@ -299,8 +259,10 @@ class CustomPlayer:
             # when the timer gets close to expiring
             if self.iterative:
                 # Perform iterative deepening
-                for depth in range(1, sys.maxsize):
+                depth = 1
+                while True:
                     _, move = search_method(game, depth=depth)
+                    depth += 1
             else:
                 # Perform the search method with fixed depth
                 _, move = search_method(game, depth=self.search_depth)
