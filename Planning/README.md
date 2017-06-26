@@ -4,21 +4,23 @@
 ## Synopsis
 
 This project includes skeletons for the classes and functions needed to solve deterministic logistics planning problems for an Air Cargo transport system using a planning search agent. 
-With progression search algorithms like those in the navigation problem from lecture, optimal plans for each 
-problem will be computed.  Unlike the navigation problem, there is no simple distance heuristic to aid the agent. 
+
+With progression search algorithms like those in the navigation problem from lecture, optimal plans for each problem will be computed.  Unlike the navigation problem, there is no simple distance heuristic to aid the agent. 
+
 Instead, you will implement domain-independent heuristics.
+
 ![Progression air cargo search](images/Progression.PNG)
 
 - Part 1 - Planning problems:
 	- READ: applicable portions of the Russel/Norvig AIMA text
 	- GIVEN: problems defined in classical PDDL (Planning Domain Definition Language)
-	- ~~TODO: Implement the Python methods and functions as marked in `my_air_cargo_problems.py`~~
-	- ~~TODO: Experiment and document metrics~~
+	- Implement the Python methods and functions as marked in `my_air_cargo_problems.py`
+	- Experiment and document metrics
 - Part 2 - Domain-independent heuristics:
-	- READ: applicable portions of the Russel/Norvig AIMA text
-	- ~~TODO: Implement relaxed problem heuristic in `my_air_cargo_problems.py~~`
-	- ~~TODO: Implement Planning Graph and automatic heuristic in `my_planning_graph.py~~`
-	- TODO: Experiment and document metrics
+	-  applicable portions of the Russel/Norvig AIMA text
+	- Implement relaxed problem heuristic in `my_air_cargo_problems.py`
+	- Implement Planning Graph and automatic heuristic in `my_planning_graph.py`
+	- Experiment and document metrics
 - Part 3 - Written Analysis
 
 ## Environment requirements
@@ -80,14 +82,14 @@ Init(At(C1, SFO) ∧ At(C2, JFK) ∧ At(C3, ATL) ∧ At(C4, ORD)
 Goal(At(C1, JFK) ∧ At(C3, JFK) ∧ At(C2, SFO) ∧ At(C4, SFO))
 ```
 
-#### ~~TODO: Implement methods and functions in `my_air_cargo_problems.py`~~
+#### Implement methods and functions in `my_air_cargo_problems.py`~~
 - `AirCargoProblem.get_actions` method including `load_actions` and `unload_actions` sub-functions
 - `AirCargoProblem.actions` method
 - `AirCargoProblem.result` method
 - `air_cargo_p2` function
 - `air_cargo_p3` function
 
-#### TODO: Experiment and document metrics for non-heuristic planning solution searches
+#### Experiment and document metrics for non-heuristic planning solution searches
 * Run uninformed planning searches for `air_cargo_p1`, `air_cargo_p2`, and `air_cargo_p3`; provide metrics on number of node expansions required, number of goal tests, time elapsed, and optimality of solution for each search algorithm. Include the result of at least three of these searches, including breadth-first and depth-first, in your write-up (`breadth_first_search` and `depth_first_graph_search`). 
 * If depth-first takes longer than 10 minutes for Problem 3 on your system, stop the search and provide this information in your report.
 * Use the `run_search` script for your data collection: from the command line type `python run_search.py -h` to learn more.
@@ -121,10 +123,10 @@ classes, and the search methods in the AIMA library.
 
 - *Planning Graph*
 
-#### ~~TODO: Implement heuristic method in `my_air_cargo_problems.py`~~
+#### Implement heuristic method in `my_air_cargo_problems.py`~~
 - `AirCargoProblem.h_ignore_preconditions` method
 
-#### ~~TODO: Implement a Planning Graph with automatic heuristics in `my_planning_graph.py`~~
+#### Implement a Planning Graph with automatic heuristics in `my_planning_graph.py`~~
 - `PlanningGraph.add_action_level` method
 - `PlanningGraph.add_literal_level` method
 - `PlanningGraph.inconsistent_effects_mutex` method
@@ -135,7 +137,7 @@ classes, and the search methods in the AIMA library.
 - `PlanningGraph.h_levelsum` method
 
 
-#### TODO: Experiment and document: metrics of A* searches with these heuristics
+#### Experiment and document: metrics of A* searches with these heuristics
 * Run A* planning searches using the heuristics you have implemented on `air_cargo_p1`, `air_cargo_p2` and `air_cargo_p3`. Provide metrics on number of node expansions required, number of goal tests, time elapsed, and optimality of solution for each search algorithm and include the results in your report. 
 * Use the `run_search` script for this purpose: from the command line type `python run_search.py -h` to learn more.
 
@@ -146,7 +148,7 @@ classes, and the search methods in the AIMA library.
 >![Planning Graph](images/eatcake-graphplan2.png)
 
 ### Part 3: Written Analysis
-#### TODO: Include the following in your written analysis.  
+#### Include the following in your written analysis.  
 - Provide an optimal plan for Problems 1, 2, and 3.
 - Compare and contrast non-heuristic search result metrics (optimality, time elapsed, number of node expansions) for Problems 1,2, and 3. Include breadth-first, depth-first, and at least one other uninformed non-heuristic search in your comparison; Your third choice of non-heuristic search may be skipped for Problem 3 if it takes longer than 10 minutes to run, but a note in this case should be included.
 - Compare and contrast heuristic search result metrics using A* with the "ignore preconditions" and "level-sum" heuristics for Problems 1, 2, and 3.
