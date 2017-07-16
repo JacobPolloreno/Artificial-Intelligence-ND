@@ -1,11 +1,9 @@
 import numpy as np
-
-from typing import List, Tuple
-
 import string
+
 from keras.models import Sequential
 from keras.layers import Activation, Dense, LSTM
-# import keras
+from typing import List, Tuple
 
 
 def window_transform_series(
@@ -82,22 +80,6 @@ def is_ascii_or_punkt(ch: str) -> bool:
         return True
 
     return False
-
-
-def token_lookup():
-    """
-    Generate a dict to turn punctuation into a token.
-    :return:
-        Tokenize dict where the key is the punct and the value is the token
-    """
-    punc_to_token = dict([
-        ('--', '||dash||'), ('.', '||period||'), (',', '||comma||'),
-        ('"', '||quotation_mark||'), (';', '||semicolon||'),
-        ('!', '||exclamation_mark||'), ('?', '||question_mark||'),
-        ('(', '||left_parentheses||'), (')', '||right_parentheses||'),
-        ('\n', '||return||')
-    ])
-    return punc_to_token
 
 
 def cleaned_text(text: str) -> str:
