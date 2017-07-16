@@ -34,10 +34,6 @@ def window_transform_series(
     for start in range(0, num_windows):
         X.append(series[start: start + window_size])
 
-    # for start in range(0, input_size):
-        # end = min(start + window_size, input_size)
-        # X.append(series[start:end])
-
     # Output is the original sequence from window_size
     y = series[window_size:]
 
