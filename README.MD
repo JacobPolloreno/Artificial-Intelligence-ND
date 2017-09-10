@@ -6,3 +6,4 @@
 4. American Sign Language with Hidden Markov Models
 5. Predict dog breeds with Convolutional Networks (and transfer learning)
 6. Generate sentences with Recurrent Neural Network
+7. Voice User Interfaces and Automatic Speech Recognition with Neural Networks
